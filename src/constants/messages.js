@@ -1,3 +1,14 @@
-export const ERROR_UNAUTHORIZED = 'User not authorized';
-export const ERROR_NO_RESPONSE = 'Failed to get response from the server';
-export const ERROR_NO_USER = 'Currently no user is logged in';
+const ERROR = {
+    FAILED_TO_LOGIN: 'Email address or password is incorrect'
+};
+
+const INFO = {
+    SUCCESSFUL_REGISTRATION: 'Successful registration, redirecting to login page..s.'
+};
+
+const MESSAGES = {
+    ERROR,
+    INFO
+};
+
+export default MESSAGES;

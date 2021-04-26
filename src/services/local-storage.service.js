@@ -1,5 +1,3 @@
-import * as MESSAGES from '../constants/messages';
-
 const STORAGE_KEY = 'CURRENT_USER';
 
 function saveUser(token, email, id) {
@@ -16,11 +14,12 @@ function deleteUser() {
 }
 
 function getStoredUser() {
+    let result = null;
     const currentUser = localStorage.getItem(STORAGE_KEY);
-    if (!currentUser) {
-        throw new Error(MESSAGES.ERROR_NO_USER);
+    if (currentUser) {
+        result = JSON.parse(currentUser);
     }
-    return JSON.parse(currentUser);
+    return result;
 }
 
 const localStorageService = {

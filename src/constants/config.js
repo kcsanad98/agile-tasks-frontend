@@ -6,7 +6,7 @@ const server = {
 
 const api = {
     login: '/auth/signin',
-    register: '/auth/signup'
+    signUp: '/auth/signup'
 };
 
 const config = {

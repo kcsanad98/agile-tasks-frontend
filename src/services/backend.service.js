@@ -1,16 +1,20 @@
 import config from '../constants/config';
-import * as MESSAGES from '../constants/messages';
+import authenticationService from './authentication.service';
 
 const serverConfig = config.server;
 const serverUrl = `${serverConfig.protocol}://${serverConfig.host}:${serverConfig.port}`;
 
 async function handleResponse(response) {
     const responseText = await response.text();
-    if (!responseText) {
-        throw new Error(MESSAGES.ERROR_NO_RESPONSE);
+    let responseData = {};
+    if (responseText) {
+        responseData = JSON.parse(responseText);
     }
-    const responseData = JSON.parse(responseText);
     if (!response.ok) {
+        if ([401, 403].includes(response.status)) {
+            authenticationService.logout();
+            window.location.reload();
+        }
         const error = (responseData && responseData.message) || response.statusText;
         throw new Error(error);
     }

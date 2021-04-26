@@ -5,13 +5,8 @@ function decode(token) {
     return decoded;
 }
 
-function isValid(token) {
-    return true;
-}
-
 const jwtService = {
-    decode,
-    isValid
+    decode
 };
 
 export default jwtService;
