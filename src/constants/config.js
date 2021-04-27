@@ -6,7 +6,11 @@ const server = {
 
 const api = {
     login: '/auth/signin',
-    signUp: '/auth/signup'
+    signUp: '/auth/signup',
+    boards: '/board',
+    users: '/user',
+    addUserToBoard: '/board/users/add',
+    removeUserFromBoard: '/board/users/remove'
 };
 
 const config = {

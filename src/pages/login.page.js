@@ -28,6 +28,9 @@ export default function Login() {
 
     useEffect(() => {
         document.title = 'Login';
+        if (authenticationService.currentUserValue()) {
+            history.push(ROUTES.HOME);
+        }
     }, []);
 
     return (

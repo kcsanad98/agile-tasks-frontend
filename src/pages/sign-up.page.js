@@ -30,6 +30,9 @@ export default function SignUp() {
 
     useEffect(() => {
         document.title = 'Sign Up';
+        if (authenticationService.currentUserValue()) {
+            history.push(ROUTES.HOME);
+        }
     }, []);
 
     return (
