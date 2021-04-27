@@ -3,7 +3,7 @@ const ERROR = {
 };
 
 const INFO = {
-    SUCCESSFUL_REGISTRATION: 'Successful registration, redirecting to login page..s.'
+    SUCCESSFUL_REGISTRATION: 'Successful registration, redirecting to login page...'
 };
 
 const MESSAGES = {
