@@ -3,13 +3,14 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import * as ROUTES from './constants/routes';
 import authenticationService from './services/authentication.service';
 import Header from './components/header.component';
-import PrivateRoute from './components/private-route.component';
+import ProtectedRoute from './components/protected-route.component';
 
 const Login = lazy(() => import('./pages/login.page'));
 const SignUp = lazy(() => import('./pages/sign-up.page'));
 const Home = lazy(() => import('./pages/home.page'));
 const CreateBoard = lazy(() => import('./pages/create-board.page'));
 const Board = lazy(() => import('./pages/board.page'));
+const Task = lazy(() => import('./pages/task.page'));
 const NotFound = lazy(() => import('./pages/not-found.page'));
 
 function App() {
@@ -26,9 +27,10 @@ function App() {
                 <Switch>
                     <Route path={ROUTES.LOGIN} component={Login} exact />
                     <Route path={ROUTES.SIGN_UP} component={SignUp} exact />
-                    <PrivateRoute path={ROUTES.HOME} component={Home} exact />
-                    <PrivateRoute path={ROUTES.CREATE_BOARD} component={CreateBoard} exact />
-                    <PrivateRoute path={ROUTES.BOARD} component={Board} />
+                    <ProtectedRoute path={ROUTES.HOME} component={Home} exact />
+                    <ProtectedRoute path={ROUTES.CREATE_BOARD} component={CreateBoard} exact />
+                    <ProtectedRoute path={ROUTES.TASK} component={Task} />
+                    <ProtectedRoute path={ROUTES.BOARD} component={Board} />
                     <Route component={NotFound} />
                 </Switch>
             </Suspense>

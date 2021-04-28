@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import authenticationService from '../services/authentication.service';
+import { LOGIN } from '../constants/page-titles';
 import * as ROUTES from '../constants/routes';
 import MESSAGES from '../constants/messages';
 
@@ -14,7 +15,7 @@ export default function Login() {
 
     const isInvalid = password === '' || emailAddress === '';
 
-    const handleLogin = async event => {
+    async function handleLogin(event) {
         event.preventDefault();
         try {
             await authenticationService.login(emailAddress, password);
@@ -24,10 +25,10 @@ export default function Login() {
             setPassword('');
             setError(MESSAGES.ERROR.FAILED_TO_LOGIN);
         }
-    };
+    }
 
     useEffect(() => {
-        document.title = 'Login';
+        document.title = LOGIN;
         if (authenticationService.currentUserValue()) {
             history.push(ROUTES.HOME);
         }

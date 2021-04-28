@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import backendService from '../services/backend.service';
+import { CREATE_BOARD } from '../constants/page-titles';
 import config from '../constants/config';
 import * as ROUTES from '../constants/routes';
 
@@ -11,7 +12,11 @@ export default function CreateBoard() {
 
     const isInvalid = title === '';
 
-    const handleSubmit = async event => {
+    useEffect(() => {
+        document.title = CREATE_BOARD;
+    }, []);
+
+    async function handleSubmit(event) {
         event.preventDefault();
         try {
             const body = { title };
@@ -20,12 +25,11 @@ export default function CreateBoard() {
         } catch (err) {
             console.error(err);
         }
-    };
+    }
 
-    const handleCancel = async event => {
-        event.preventDefault();
+    function handleCancel() {
         history.push(ROUTES.HOME);
-    };
+    }
 
     return (
         <div className="flex flex-col items-center p-4 mb-4">
@@ -51,7 +55,7 @@ export default function CreateBoard() {
                         className={`bg-blue-medium text-white w-full rounded h-8 font-bold ${
                             isInvalid && 'opacity-50'
                         }`}>
-                        Submit
+                        Save
                     </button>
                     <button
                         type="button"

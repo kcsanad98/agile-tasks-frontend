@@ -11,12 +11,17 @@ export default function Header() {
     }
 
     return (
-        <header className="h-16 bg-white border-b border-gray-primary flex justify-between px-8 max-w">
+        <header className="h-16 bg-white border-b border-gray-primary flex justify-between px-2 md:px-8 max-w">
             <div className="text-gray-700 text-center flex items-center align-items cursor-pointer">
                 <h1 className="flex justify-center font-bold text-blue-medium">
                     <Link to={ROUTES.HOME}>Agile tasks</Link>
                 </h1>
             </div>
+            {authenticationService.currentUserValue() && (
+                <h1 className="md:text-xl font-bold text-center flex items-center align-items">
+                    {authenticationService.currentUserValue().email}
+                </h1>
+            )}
             <div className="text-gray-700 text-center flex items-center align-items">
                 <button
                     type="button"

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import authenticationService from '../services/authentication.service';
+import { SIGN_UP } from '../constants/page-titles';
 import * as ROUTES from '../constants/routes';
 import MESSAGES from '../constants/messages';
 
@@ -15,7 +16,14 @@ export default function SignUp() {
 
     const isInvalid = password === '' || emailAddress === '';
 
-    const handleSignup = async event => {
+    useEffect(() => {
+        document.title = SIGN_UP;
+        if (authenticationService.currentUserValue()) {
+            history.push(ROUTES.HOME);
+        }
+    }, []);
+
+    async function handleSignup(event) {
         event.preventDefault();
         try {
             await authenticationService.signUp(emailAddress, password);
@@ -26,14 +34,7 @@ export default function SignUp() {
             setPassword('');
             setError(err.message);
         }
-    };
-
-    useEffect(() => {
-        document.title = 'Sign Up';
-        if (authenticationService.currentUserValue()) {
-            history.push(ROUTES.HOME);
-        }
-    }, []);
+    }
 
     return (
         <div className="container flex items-center justify-center h-screen">

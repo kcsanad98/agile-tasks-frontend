@@ -9,8 +9,10 @@ const api = {
     signUp: '/auth/signup',
     boards: '/board',
     users: '/user',
+    tasks: '/task',
     addUserToBoard: '/board/users/add',
-    removeUserFromBoard: '/board/users/remove'
+    removeUserFromBoard: '/board/users/remove',
+    getTasksByBoard: '/task/board'
 };
 
 const config = {
