@@ -1,17 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useHistory, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import backendService from '../services/backend.service';
 import authenticationService from '../services/authentication.service';
-import BoardColumn from '../components/board-column.component';
-import UserBoard from '../components/user-card.component';
-import * as ROUTES from '../constants/routes';
+import UserCard from '../components/user-card.component';
 import { BOARD } from '../constants/page-titles';
-import TASK_STATUSES from '../constants/task-statuses';
 import config from '../constants/config';
+import KanbanBoard from '../components/kanban-board.component';
 
 export default function Board() {
-    const history = useHistory();
-
     const { boardId } = useParams();
 
     const [title, setTitle] = useState('');
@@ -71,15 +67,6 @@ export default function Board() {
         }
     }
 
-    async function handleDeleteBoard() {
-        try {
-            await backendService.del(`${config.api.boards}/${boardId}`);
-            history.push(ROUTES.HOME);
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
     return (
         <div className="container p-8">
             <div className="flex flex-row justify-between">
@@ -110,7 +97,7 @@ export default function Board() {
                 </div>
                 <div className="flex flex-col md:flex-row">
                     {newUsers.map(user => (
-                        <UserBoard
+                        <UserCard
                             boardId={boardId}
                             key={user.id}
                             user={user}
@@ -122,7 +109,7 @@ export default function Board() {
             <h2 className="mt-8 mb-4 font-bold text-xl">Users currently accessing this board:</h2>
             <div className="flex flex-col md:flex-row">
                 {currentUsers.map(user => (
-                    <UserBoard
+                    <UserCard
                         boardId={boardId}
                         key={user.id}
                         user={user}
@@ -130,38 +117,7 @@ export default function Board() {
                     />
                 ))}
             </div>
-            <div className="flex flex-col md:flex-row gap-2 mt-4">
-                {Object.keys(TASK_STATUSES).map(key => {
-                    const taskStatus = TASK_STATUSES[key];
-                    return (
-                        <BoardColumn key={taskStatus.key} status={taskStatus} boardId={boardId} />
-                    );
-                })}
-            </div>
-            <div className="flex flex-row justify-end mt-8 gap-4">
-                <button
-                    type="button"
-                    title="Delete board"
-                    aria-label="Delete board"
-                    className="bg-red-primary text-white px-4 rounded h-10 flex flex-row justify-between align-items items-center"
-                    onClick={handleDeleteBoard}>
-                    <span className="fa fa-trash mr-2" />
-                    Delete Board
-                </button>
-                <button
-                    type="button"
-                    title="Add task"
-                    aria-label="Add task"
-                    className="bg-blue-medium text-white px-4 rounded h-10"
-                    onClick={() =>
-                        history.push(
-                            ROUTES.TASK.replace(':taskId', 'new').replace(':boardId', boardId)
-                        )
-                    }>
-                    <span className="fa fa-plus mr-2" />
-                    Add task
-                </button>
-            </div>
+            <KanbanBoard boardId={boardId} />
         </div>
     );
 }

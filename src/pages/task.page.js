@@ -29,7 +29,6 @@ export default function Task() {
 
     async function saveTask() {
         const requestBody = { title, description, status: TASK_STATUSES.TODO.key, board: boardId };
-        console.log(requestBody);
         await backendService.post(config.api.tasks, requestBody);
     }
 
