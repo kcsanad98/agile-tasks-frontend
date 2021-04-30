@@ -1,29 +1,46 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { useHistory } from 'react-router';
-import config from '../constants/config';
-import TASK_STATUSES from '../constants/task-statuses';
+import io from 'socket.io-client';
 import backendService from '../services/backend.service';
 import BoardColumn from './board-column.component';
+import config from '../constants/config';
+import TASK_STATUSES from '../constants/task-statuses';
 import * as ROUTES from '../constants/routes';
 
 export default function KanbanBoard(props) {
     const history = useHistory();
+    const socketRef = useRef();
 
     const { boardId } = props;
 
     const [tasks, setTasks] = useState([]);
 
+    function updateBoard(taskId, newStatus) {
+        setTasks(tasks.map(task => (task.id === taskId ? { ...task, status: newStatus } : task)));
+    }
+
+    function initSocket() {
+        const server = `${config.server.protocol}://${config.server.host}:${config.server.port}`;
+        socketRef.current = io.connect(server);
+        socketRef.current.on(config.server.socketGateway, ({ board, task, newStatus }) => {
+            if (board === boardId) {
+                updateBoard(task, newStatus);
+            }
+        });
+    }
+
     useEffect(async () => {
         const boardData = await backendService.get(`${config.api.boards}/${boardId}`);
         setTasks(boardData.tasks);
+        initSocket();
+        return () => socketRef.current.disconnect();
     }, []);
 
     async function handleDeleteTask(taskId) {
         try {
             await backendService.del(`${config.api.tasks}/${taskId}`);
-            const notDeleted = tasks.filter(task => task.id !== taskId);
-            setTasks(notDeleted);
+            setTasks(tasks.filter(task => task.id !== taskId));
         } catch (err) {
             console.error(err);
         }
@@ -32,12 +49,14 @@ export default function KanbanBoard(props) {
     async function onDragEnd(result) {
         try {
             const taskId = result.draggableId;
-            const taskIndex = tasks.findIndex(task => task.id === taskId);
             const newStatus = result.destination.droppableId;
-            const tasksCopy = [...tasks];
             await backendService.put(`${config.api.tasks}/${taskId}`, { status: newStatus });
-            tasksCopy[taskIndex].status = newStatus;
-            setTasks(tasksCopy);
+            updateBoard(taskId, newStatus);
+            await socketRef.current.emit(config.server.socketGateway, {
+                board: boardId,
+                task: taskId,
+                newStatus
+            });
         } catch (err) {
             console.error(err);
         }

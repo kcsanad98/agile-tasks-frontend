@@ -1,7 +1,8 @@
 const server = {
     protocol: 'http',
     host: 'localhost',
-    port: 8080
+    port: 8080,
+    socketGateway: 'task-update'
 };
 
 const api = {
