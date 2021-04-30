@@ -60,13 +60,11 @@ export default function KanbanBoard(props) {
     useEffect(async () => {
         const boardData = await backendService.get(`${config.api.boards}/${boardId}`);
         dispatch({ type: config.reducerActions.addMany, newTasks: boardData.tasks });
+    }, []);
+
+    useEffect(() => {
         listenOnSocket();
-        return () => {
-            socket.off(config.socket.add, () => {});
-            socket.off(config.socket.update, () => {});
-            socket.off(config.socket.delete, () => {});
-            socket.removeAllListener();
-        };
+        return () => socket.removeAllListeners();
     }, []);
 
     async function onDragEnd(result) {
