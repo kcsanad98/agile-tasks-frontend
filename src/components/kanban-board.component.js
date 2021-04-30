@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { useHistory } from 'react-router';
 import io from 'socket.io-client';
@@ -8,31 +8,50 @@ import config from '../constants/config';
 import TASK_STATUSES from '../constants/task-statuses';
 import * as ROUTES from '../constants/routes';
 
+function reducer(state, action) {
+    switch (action.type) {
+        case config.reducerActions.add:
+            return { tasks: [...state.tasks, action.newTask] };
+        case config.reducerActions.addMany:
+            return { tasks: [...state.tasks, ...action.newTasks] };
+        case config.reducerActions.remove:
+            return { tasks: state.tasks.filter(task => task.id !== action.taskId) };
+        case config.reducerActions.update:
+            return {
+                tasks: state.tasks.map(task =>
+                    task.id === action.taskId ? { ...task, ...action.updatedTask } : task
+                )
+            };
+        default:
+            return state;
+    }
+}
+
 export default function KanbanBoard(props) {
     const history = useHistory();
     const socketRef = useRef();
 
     const { boardId } = props;
 
-    const [tasks, setTasks] = useState([]);
-
-    function updateBoard(taskId, newStatus) {
-        setTasks(tasks.map(task => (task.id === taskId ? { ...task, status: newStatus } : task)));
-    }
+    const [state, dispatch] = useReducer(reducer, { tasks: [] });
 
     function initSocket() {
         const server = `${config.server.protocol}://${config.server.host}:${config.server.port}`;
         socketRef.current = io.connect(server);
         socketRef.current.on(config.server.socketGateway, ({ board, task, newStatus }) => {
             if (board === boardId) {
-                updateBoard(task, newStatus);
+                dispatch({
+                    type: config.reducerActions.update,
+                    taskId: task,
+                    updatedTask: { status: newStatus }
+                });
             }
         });
     }
 
     useEffect(async () => {
         const boardData = await backendService.get(`${config.api.boards}/${boardId}`);
-        setTasks(boardData.tasks);
+        dispatch({ type: config.reducerActions.addMany, newTasks: boardData.tasks });
         initSocket();
         return () => socketRef.current.disconnect();
     }, []);
@@ -40,7 +59,7 @@ export default function KanbanBoard(props) {
     async function handleDeleteTask(taskId) {
         try {
             await backendService.del(`${config.api.tasks}/${taskId}`);
-            setTasks(tasks.filter(task => task.id !== taskId));
+            dispatch({ type: config.reducerActions.remove, taskId });
         } catch (err) {
             console.error(err);
         }
@@ -51,7 +70,11 @@ export default function KanbanBoard(props) {
             const taskId = result.draggableId;
             const newStatus = result.destination.droppableId;
             await backendService.put(`${config.api.tasks}/${taskId}`, { status: newStatus });
-            updateBoard(taskId, newStatus);
+            dispatch({
+                type: config.reducerActions.update,
+                taskId,
+                updatedTask: { status: newStatus }
+            });
             await socketRef.current.emit(config.server.socketGateway, {
                 board: boardId,
                 task: taskId,
@@ -86,7 +109,9 @@ export default function KanbanBoard(props) {
                                         status={taskStatus}
                                         boardId={boardId}
                                         deleteTaskHandler={handleDeleteTask}
-                                        tasks={tasks.filter(task => task.status === taskStatus.key)}
+                                        tasks={state.tasks.filter(
+                                            task => task.status === taskStatus.key
+                                        )}
                                     />
                                 )}
                             </Droppable>

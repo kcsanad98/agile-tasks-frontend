@@ -16,9 +16,17 @@ const api = {
     getTasksByBoard: '/task/board'
 };
 
+const reducerActions = {
+    add: 'add',
+    addMany: 'addMany',
+    remove: 'remove',
+    update: 'update'
+};
+
 const config = {
     server,
-    api
+    api,
+    reducerActions
 };
 
 export default config;

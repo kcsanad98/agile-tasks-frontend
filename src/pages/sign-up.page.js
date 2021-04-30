@@ -41,7 +41,7 @@ export default function SignUp() {
             <div className="flex flex-col">
                 <div className="flex flex-col items-center bg-white p-4 rounded border border-gray-primary mb-4">
                     {error && <p className="mb-4 text-xs text-red-primary">{error}</p>}
-                    {message && <p className="mb-4 text-xs text-emerald-500">{message}</p>}
+                    {message && <p className="mb-4 text-xs text-blue-dark">{message}</p>}
                     <form onSubmit={handleSignup} method="POST">
                         <input
                             aria-label="Enter your email address"
