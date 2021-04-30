@@ -65,6 +65,7 @@ export default function KanbanBoard(props) {
             socket.off(config.socket.add, () => {});
             socket.off(config.socket.update, () => {});
             socket.off(config.socket.delete, () => {});
+            socket.removeAllListener();
         };
     }, []);
 
