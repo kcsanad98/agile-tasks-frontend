@@ -1,17 +1,17 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useContext, useEffect, useReducer } from 'react';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { useHistory } from 'react-router';
-import io from 'socket.io-client';
 import backendService from '../services/backend.service';
 import BoardColumn from './board-column.component';
 import config from '../constants/config';
 import TASK_STATUSES from '../constants/task-statuses';
 import * as ROUTES from '../constants/routes';
+import { SocketContext } from '../context/socket.context';
 
 function reducer(state, action) {
     switch (action.type) {
         case config.reducerActions.add:
-            return { tasks: [...state.tasks, action.newTask] };
+            return { tasks: state.tasks.concat([action.newTask]) };
         case config.reducerActions.addMany:
             return { tasks: [...state.tasks, ...action.newTasks] };
         case config.reducerActions.remove:
@@ -29,22 +29,30 @@ function reducer(state, action) {
 
 export default function KanbanBoard(props) {
     const history = useHistory();
-    const socketRef = useRef();
+    const socket = useContext(SocketContext);
 
     const { boardId } = props;
 
     const [state, dispatch] = useReducer(reducer, { tasks: [] });
 
-    function initSocket() {
-        const server = `${config.server.protocol}://${config.server.host}:${config.server.port}`;
-        socketRef.current = io.connect(server);
-        socketRef.current.on(config.server.socketGateway, ({ board, task, newStatus }) => {
-            if (board === boardId) {
+    function listenOnSocket() {
+        socket.on(config.socket.update, ({ boardId, taskId, updatedTask }) => {
+            if (boardId === props.boardId) {
                 dispatch({
                     type: config.reducerActions.update,
-                    taskId: task,
-                    updatedTask: { status: newStatus }
+                    taskId,
+                    updatedTask
                 });
+            }
+        });
+        socket.on(config.socket.delete, ({ boardId, taskId }) => {
+            if (boardId === props.boardId) {
+                dispatch({ type: config.reducerActions.remove, taskId });
+            }
+        });
+        socket.on(config.socket.add, ({ boardId, newTask }) => {
+            if (boardId === props.boardId) {
+                dispatch({ type: config.reducerActions.add, newTask });
             }
         });
     }
@@ -52,18 +60,13 @@ export default function KanbanBoard(props) {
     useEffect(async () => {
         const boardData = await backendService.get(`${config.api.boards}/${boardId}`);
         dispatch({ type: config.reducerActions.addMany, newTasks: boardData.tasks });
-        initSocket();
-        return () => socketRef.current.disconnect();
+        listenOnSocket();
+        return () => {
+            socket.off(config.socket.add, () => {});
+            socket.off(config.socket.update, () => {});
+            socket.off(config.socket.delete, () => {});
+        };
     }, []);
-
-    async function handleDeleteTask(taskId) {
-        try {
-            await backendService.del(`${config.api.tasks}/${taskId}`);
-            dispatch({ type: config.reducerActions.remove, taskId });
-        } catch (err) {
-            console.error(err);
-        }
-    }
 
     async function onDragEnd(result) {
         try {
@@ -75,10 +78,10 @@ export default function KanbanBoard(props) {
                 taskId,
                 updatedTask: { status: newStatus }
             });
-            await socketRef.current.emit(config.server.socketGateway, {
-                board: boardId,
-                task: taskId,
-                newStatus
+            await socket.emit(config.socket.update, {
+                boardId,
+                taskId,
+                updatedTask: { status: newStatus }
             });
         } catch (err) {
             console.error(err);
@@ -108,7 +111,6 @@ export default function KanbanBoard(props) {
                                         snapshot={snapshot}
                                         status={taskStatus}
                                         boardId={boardId}
-                                        deleteTaskHandler={handleDeleteTask}
                                         tasks={state.tasks.filter(
                                             task => task.status === taskStatus.key
                                         )}

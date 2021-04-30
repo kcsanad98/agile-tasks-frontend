@@ -4,6 +4,7 @@ import * as ROUTES from './constants/routes';
 import authenticationService from './services/authentication.service';
 import Header from './components/header.component';
 import ProtectedRoute from './components/protected-route.component';
+import { SocketContext, socket } from './context/socket.context';
 
 const Login = lazy(() => import('./pages/login.page'));
 const SignUp = lazy(() => import('./pages/sign-up.page'));
@@ -18,23 +19,26 @@ function App() {
 
     useEffect(() => {
         authenticationService.currentUser().subscribe(user => setCurrentUser(user));
+        return () => socket.close();
     }, []);
 
     return (
-        <Router>
-            {currentUser && <Header />}
-            <Suspense fallback={<p>Loading...</p>}>
-                <Switch>
-                    <Route path={ROUTES.LOGIN} component={Login} exact />
-                    <Route path={ROUTES.SIGN_UP} component={SignUp} exact />
-                    <ProtectedRoute path={ROUTES.HOME} component={Home} exact />
-                    <ProtectedRoute path={ROUTES.CREATE_BOARD} component={CreateBoard} exact />
-                    <ProtectedRoute path={ROUTES.TASK} component={Task} />
-                    <ProtectedRoute path={ROUTES.BOARD} component={Board} />
-                    <Route component={NotFound} />
-                </Switch>
-            </Suspense>
-        </Router>
+        <SocketContext.Provider value={socket}>
+            <Router>
+                {currentUser && <Header />}
+                <Suspense fallback={<p>Loading...</p>}>
+                    <Switch>
+                        <Route path={ROUTES.LOGIN} component={Login} exact />
+                        <Route path={ROUTES.SIGN_UP} component={SignUp} exact />
+                        <ProtectedRoute path={ROUTES.HOME} component={Home} exact />
+                        <ProtectedRoute path={ROUTES.CREATE_BOARD} component={CreateBoard} exact />
+                        <ProtectedRoute path={ROUTES.TASK} component={Task} />
+                        <ProtectedRoute path={ROUTES.BOARD} component={Board} />
+                        <Route component={NotFound} />
+                    </Switch>
+                </Suspense>
+            </Router>
+        </SocketContext.Provider>
     );
 }
 

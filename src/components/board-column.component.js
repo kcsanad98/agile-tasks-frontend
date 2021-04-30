@@ -2,7 +2,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import TaskCard from './task-card.component';
 
 export default function BoardColumn(props) {
-    const { status, boardId, tasks, provided, snapshot, deleteTaskHandler } = props;
+    const { status, boardId, tasks, provided, snapshot } = props;
 
     return (
         <div
@@ -21,7 +21,6 @@ export default function BoardColumn(props) {
                                 data={task}
                                 boardId={boardId}
                                 snapshot={snapshot}
-                                deleteTaskHandler={deleteTaskHandler}
                             />
                         )}
                     </Draggable>

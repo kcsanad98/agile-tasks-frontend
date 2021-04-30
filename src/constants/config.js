@@ -1,8 +1,13 @@
 const server = {
     protocol: 'http',
     host: 'localhost',
-    port: 8080,
-    socketGateway: 'task-update'
+    port: 8080
+};
+
+const socket = {
+    update: 'task-update',
+    delete: 'task-delete',
+    add: 'task-add'
 };
 
 const api = {
@@ -25,6 +30,7 @@ const reducerActions = {
 
 const config = {
     server,
+    socket,
     api,
     reducerActions
 };

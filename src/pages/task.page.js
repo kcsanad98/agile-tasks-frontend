@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import backendService from '../services/backend.service';
 import { TASK } from '../constants/page-titles';
 import config from '../constants/config';
 import TASK_STATUSES from '../constants/task-statuses';
+import { SocketContext } from '../context/socket.context';
 
 const NEW_TASK_ID = 'new';
 
 export default function Task() {
     const { boardId, taskId } = useParams();
+
+    const socket = useContext(SocketContext);
 
     const history = useHistory();
 
@@ -29,12 +32,22 @@ export default function Task() {
 
     async function saveTask() {
         const requestBody = { title, description, status: TASK_STATUSES.TODO.key, board: boardId };
-        await backendService.post(config.api.tasks, requestBody);
+        const taskId = await backendService.post(config.api.tasks, requestBody);
+        await socket.emit(config.socket.add, {
+            boardId,
+            taskId,
+            newTask: { ...requestBody, id: taskId }
+        });
     }
 
     async function updateTask() {
         const requestBody = { title, description };
         await backendService.put(`${config.api.tasks}/${taskId}`, requestBody);
+        await socket.emit(config.socket.update, {
+            boardId,
+            taskId,
+            updatedTask: requestBody
+        });
     }
 
     async function handleSave(event) {
