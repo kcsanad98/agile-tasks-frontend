@@ -14,10 +14,12 @@ export default function KanbanBoard(props) {
 
     const { boardId } = props;
 
-    const [tasks, setTasks] = useState([]);
+    const [tasks, setTasks] = useState([{ id: '31321', title: 'sdas', status: 'TODO' }]);
 
     function updateBoard(taskId, newStatus) {
-        setTasks(tasks.map(task => (task.id === taskId ? { ...task, status: newStatus } : task)));
+        setTasks(tasks =>
+            tasks.map(task => (task.id === taskId ? { ...task, status: newStatus } : task))
+        );
     }
 
     function initSocket() {
@@ -25,6 +27,7 @@ export default function KanbanBoard(props) {
         socketRef.current = io.connect(server);
         socketRef.current.on(config.server.socketGateway, ({ board, task, newStatus }) => {
             if (board === boardId) {
+                console.log('Calling updateBoard');
                 updateBoard(task, newStatus);
             }
         });
